@@ -25,33 +25,34 @@ set :dev, '/dev/sdf'
 set :mount_point, '/mnt/data'
 
 
+#start an instance
+#cap EC2:start
 
-#make a new EBS volume from this snap 
+#make a new EBS volume and mount it
 #cap EBS:create
-
-#and mount your EBS
 #cap EBS:attach
 #cap EBS:format_xfs
 #cap EBS:mount_xfs
 
 
 
+#why the hell doesn't this work.
 desc "Upload data files"
 task :upload_data, :roles => group_name do
-  
   files = [
-
-          "README"
+           "C18 H3K9ac_CME143_s_8_export.zip",
+           "D4 H3K9ac_CME141_s_6_export.zip",  
+           "FloResCre (C18) H4ac_CME117_s_2_export.zip",
+           "FloRes H4acs_CME118_3_export.zip",
+           "C18 input_CME142_s_7_export.zip",   
+           "D4 input_CME140_s_5_export.zip",
+           "FloResCre (C18) Input_CME116_s_5_export.zip",
+           "README"
   ]
 
   files.each do |f|
-    upload(f, "#{mount_point}/#{f}") 
+    upload(f, "#{mount_point}/#{f}", :via => :scp) 
   end
-  
-
-#  upload(ipfile, "#{mount_point}/#{ipfile}")
-#  upload(inputfile, "#{mount_point}/#{inputfile}")
-#  put("IPfile: #{ipfile}\nInputFile: #{inputfile}", "#{mount_point}/README")
 end
 before 'upload_data', 'EC2:start'
 

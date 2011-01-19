@@ -1,0 +1,23 @@
+cat: SNAPID: No such file or directory
+  * executing `upload_data'
+    triggering before callbacks for `upload_data'
+  * executing `EC2:start'
+I, [2011-01-19T13:48:37.182930 #17162]  INFO -- : New RightAws::Ec2 using shared connections mode
+I, [2011-01-19T13:48:37.184647 #17162]  INFO -- : Opening new HTTPS connection to eu-west-1.ec2.amazonaws.com:443
+W, [2011-01-19T13:48:37.300264 #17162]  WARN -- : ##### RightAws::Ec2 returned an error: 400 Bad Request
+<?xml version="1.0" encoding="UTF-8"?>
+<Response><Errors><Error><Code>InvalidGroup.Duplicate</Code><Message>The security group 'CaTPAWS_FloResCre_ChIPseq_data' already exists</Message></Error></Errors><RequestID>a7f39202-e3eb-4106-9fb7-774ad395191f</RequestID></Response> #####
+W, [2011-01-19T13:48:37.300363 #17162]  WARN -- : ##### RightAws::Ec2 request: https://eu-west-1.ec2.amazonaws.com:443/?AWSAccessKeyId=16F5AHH5HWR243WSNMR2&Action=CreateSecurityGroup&GroupDescription=A%20group%20created%20by%20CaTPAWS%20%28http%3A%2F%2Fgithub.com%2Fcassj%2Fcatpaws%29&GroupName=CaTPAWS_FloResCre_ChIPseq_data&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2011-01-19T13%3A48%3A37.000Z&Version=2009-11-30&Signature=gYNM%2BPAxB6NvSuXpY%2Brl1csNJQdrQjyi%2BBn24Noh%2FtA%3D ####
+    triggering after callbacks for `EC2:start'
+  * executing `EC2:setup'
+  * executing "sudo -p 'sudo password: ' mkdir -p /mnt/work"
+    servers: ["ec2-46-137-21-253.eu-west-1.compute.amazonaws.com"]
+    [ec2-46-137-21-253.eu-west-1.compute.amazonaws.com] executing command
+    command finished
+  * executing "sudo -p 'sudo password: ' chown -R ubuntu /mnt/work"
+    servers: ["ec2-46-137-21-253.eu-west-1.compute.amazonaws.com"]
+    [ec2-46-137-21-253.eu-west-1.compute.amazonaws.com] executing command
+    command finished
+    servers: ["ec2-46-137-21-253.eu-west-1.compute.amazonaws.com"]
+ ** sftp upload C18 H3K9ac_CME143_s_8_export.zip -> /mnt/data/C18 H3K9ac_CME143_s_8_export.zip
+    [ec2-46-137-21-253.eu-west-1.compute.amazonaws.com] /mnt/data/C18 H3K9ac_CME143_s_8_export.zip
