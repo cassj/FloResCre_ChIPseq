@@ -307,31 +307,30 @@ before "bam_tidy", 'EC2:start'
 
 
 
+################## Peak Finding
+
 #### SICER ??
 
 SICER_link ="http://home.gwu.edu/~wpeng/SICER_v1.03.tgz"
 desc "install SICER"
 task :install_SICER, :roles => group_name do
-   run "cd #{working_dir} && curl #{SICER_link} > SICER_v1.03.tgz"
-   run "cd #{working_dir} && tar -xzf SICER_v1.03.tgz"
-
+  run "sudo apt-get update"
+  run "sudo apt-get -y install python-numpy python-scipy"
+  run "cd #{working_dir} && curl #{SICER_link} > SICER_v1.03.tgz"
+  run "cd #{working_dir} && tar -xzf SICER_v1.03.tgz"
+  cmd = %Q(cd #{working_dir}/SICER_v1.03/SICER/ && perl -pi.bak -e "s|PATHTO/SICER/|#{working_dir}/SICER_v1.03/SICER|g" SICER*.sh)
+  run cmd
 end
 before 'install_SICER', 'EC2:start'
 
-####Need bedtools to covert bam to bed files, but link doesnt seem to work - corrupt file?
-#instead sftp file straight to server from github download link
-#install g++ compiler (sudo apt-get install g++)
-#tar -zxvf arq5x-bedtools-9242fe1.tar.gz
-#cd into new directory
-#make clean
-#make all
-
-BEDTools_link = "https://github.com/arq5x/bedtools/tarball/master/arq5x-bedtools-9242fe1.tar.gz"
 desc "install BEDTools"
 task :install_BEDTools, :roles => group_name do
-   run "cd #{working_dir} && curl #{BEDTools_link} > arq5x-bedtools-9242fe1.tar.gz"
-   run "cd #{working_dir} && tar -zxvf arq5x-bedtools-9242fe1.tar.gz"
-
+  run "sudo apt-get update"
+  run "sudo apt-get install -y git-cvs"
+  run "cd #{working_dir} && git clone git://github.com/arq5x/bedtools.git"
+  run "cd #{working_dir}/bedtools && make clean"
+  run "cd #{working_dir}/bedtools && make all"
+  run "sudo cp #{working_dir}/bedtools/bin/* /usr/local/bin/"
 end
 before 'install_BEDTools', 'EC2:start'
 
@@ -341,29 +340,43 @@ task :bamToBed, :roles => group_name do
    files = files.map {|f| f.chomp}
    files.each{|infile|
      f_out = infile.sub('.bam', '.bed')
-     run "#{working_dir}/arq5x-bedtools-9242fe1/bin/bamToBed -i #{infile} > #{f_out}"
+     run "bamToBed -i #{infile} > #{f_out}"
    }
 
 end
 before 'bamToBed', 'EC2:start'
 
-# nohup /mnt/work/arq5x-bedtools-9242fe1/bin/bamToBed -i MLA_NS_H3K4me3_CMN054_s_2_export_sorted_nodups.bam > MLA_NS_H3K4me3_CMN054_s_2_export_sorted_nodups.bed &
 
 
-#to change parameters vim the shell script
-#gap size at 1 for H3K4me3 and 3 for H3K27me
-#fragment size at 300bp
-#genome at mm9
-#directories point already to /mnt/work and /mnt/data hopefully????
 desc "run SICER"
 task :run_SICER, :roles => group_name do
-   treatment = "MLA_NS_H3K4me3_CMN054_s_2_export_sorted_nodups.bed"
-   control = "MLA_NS_input_CMN055_s_3_export_sorted_nodups.bed"
-   window_size = 200
-   gap_size = 400
-   P_value = 1E-3
-
-   run "#{working_dir}/SICER_v1.03/SICER/SICER_mod.sh #{treatment} #{control} #{window_size} #{gap_size} #{P_value}"
+  Comparison = Struct.new(:control, :treatment)
+  comparisons = [
+                 Comparison.new("FloResCre_C18_Input_CME116_s_5_export_sorted_nodups.bam", "FloResCre_C18_H4ac_CME117_s_2_export_sorted_nodups.bam"),
+                 Comparions.new("C18_H3K9ac_CME143_s_8_export_sorted_nodups.bam", "C18_input_CME142_s_7_export_sorted_nodups.bam"),
+                 Comparison.new("D4_H3K9ac_CME141_s_6_export_sorted_nodups.bam",  "CME140_s_5_export_sorted_nodups.bam"),
+                 Comparison.new("FloRes_H4acs_CME118_3_export_sorted_nodups.bam",  "D4_H3K9ac_CME141_s_6_export_sorted_nodups")
+                ]
+#  # we need to do multiple comparisons here. 
+#  treatments = ["FloResCre_C18_H4ac_CME117_s_2_export_sorted_nodups.bam",
+#                "C18_H3K9ac_CME143_s_8_export_sorted_nodups.bam",
+#                "D4_H3K9ac_CME141_s_6_export_sorted_nodups.bam",
+#                "FloRes_H4acs_CME118_3_export_sorted_nodups.bam"
+#               ]
+#  controls   = ["FloResCre_C18_Input_CME116_s_5_export_sorted_nodups.bam",
+#                "C18_input_CME142_s_7_export_sorted_nodups.bam",
+#                "CME140_s_5_export_sorted_nodups.bam",
+#                "D4_H3K9ac_CME141_s_6_export_sorted_nodups"
+#               ]
+#
+#   
+#   treatment = "MLA_NS_H3K4me3_CMN054_s_2_export_sorted_nodups.bed"
+#   control = "MLA_NS_input_CMN055_s_3_export_sorted_nodups.bed"
+#   window_size = 200
+#   gap_size = 400
+#   P_value = 1E-3
+#
+#   run "#{working_dir}/SICER_v1.03/SICER/SICER_mod.sh #{treatment} #{control} #{window_size} #{gap_size} #{P_value}"
    
 end
 before 'run_SICER', 'EC2:start'
